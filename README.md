@@ -80,22 +80,22 @@ If you have Docker and Docker compose installed, run `docker-compose up`
 
 ### Non Docker
 
-Create a new virtual environment (Python 3.10) if needed. Then, install all the required dependencies.
-
-The dependencies are compiled by [pip-tools](https://github.com/jazzband/pip-tools), which
-compiles `requirements.txt` ensuring compatibility between packages.
+Dependencies are managed with [uv](https://docs.astral.sh/uv/) (Python 3.12). Install uv, then create the
+virtual environment and install all dependencies (including the dev group) with:
 
 ```bash
-pip install pip-tools
-pip-sync
+uv sync
 ```
 
-> There is more information on how `pip-tools` work below in [Using pip-tools](#using-pip-tools).
+Run commands inside the environment with `uv run`, e.g. `uv run python manage.py runserver`, or activate it with
+`source .venv/bin/activate`.
+
+> There is more information on how dependencies are managed below in [Managing dependencies with uv](#managing-dependencies-with-uv).
 
 Install the [pre-commit](https://github.com/pre-commit/pre-commit) hook. It's useful so we automatically format and lint code before committing any changes.
 
 ```bash
-pre-commit install
+uv run pre-commit install
 ```
 
 Start the [PostgreSQL database server](http://www.postgresql.org/docs/current/static/server-start.html) and enter the `psql` shell (you need to have [PostgreSQL](http://www.postgresql.org/download/) installed):
@@ -258,35 +258,34 @@ Several things were needed to get this working:
 5. Give the service account permission to access admin.directory.users service (https://admin.google.com/AdminHome?chromeless=1#OGX:ManageOauthClients).
 
 
-### Using pip-tools
+### Managing dependencies with uv
 
-The packages required by the project are in `requirements.in` which looks like a regular requirements file. Specific versions of packages can be
-specified, or left without a version in which case the latest version which is compatible with the other packages will be used.
+Direct dependencies are declared in `pyproject.toml`: runtime packages under `[project].dependencies`, and linting and
+testing tools under the `dev` dependency group. Exact resolved versions (including transitive dependencies) are
+recorded in `uv.lock`, which must be committed.
 
-If you are working on a feature which requires a new package, add it to `requirements.in`, specifying a version if necessary.
-It's dependencies will be included in `requirements.txt` by the compile process. 
-
-The only time a dependency of a third party package needs adding to `requirements.in` is when a version has to be pinned.
-
-By running `pip-compile` the requirements are compiled into `requirements.txt`.
-
-Periodically requirements should be updated to ensure that new versions, most importantly security patches, are used. 
-This is done using the `-U` flag.
-
-Once requirements are compiled, `pip-sync` will install the requirements, but also remove any packages not required.
-This helps to ensure you have the packages required, but also that there isn't something installed that's missed 
-from `requirements.txt`.
-
-For example:
+Add or remove packages with uv, which updates both files:
 
 ```bash
-pip-compile -U
-pip-sync
+uv add some-package            # runtime dependency
+uv add --dev some-test-tool    # dev dependency
+uv remove some-package
+```
+
+Only pin a version in `pyproject.toml` when you need to; otherwise leave it unpinned and let the lock file hold the
+version.
+
+Periodically dependencies should be updated to pick up new versions, most importantly security patches:
+
+```bash
+uv lock --upgrade     # upgrade everything
+uv lock --upgrade-package django-countries   # or a single package
+uv sync
 ```
 
 ### Handling environment variables
 
-The `requirements.txt` installs [python-dotenv](https://pypi.org/project/python-dotenv/) which provides the option for
+The project depends on [python-dotenv](https://pypi.org/project/python-dotenv/) which provides the option for
 developers to load environment variables via a single file.
 
 You'll see `.environment-example` in the project root. This contains environment variables used by the project so that
@@ -302,11 +301,11 @@ This is an optional feature. If you do not have a `.environment` file then it wo
 
 This project runs a linting check with [flake8](https://pypi.org/project/flake8/) whenever a pull request is merged. Before you create a pull request, it's advisable to fix any linting issues locally to avoid errors while merging. In order to have flake8 run in your local machine automatically you can do the following:
 
-1) Run `pip install pre-commit` to install [pre-commit](https://pypi.org/project/pre-commit/). This package helps setting up git hooks.
+1) Run `uv sync` to install [pre-commit](https://pypi.org/project/pre-commit/) (part of the dev group). This package helps setting up git hooks.
 
-2) Run `pre-commit install` to install the git hook. After this, whenever you run `git commit` in your local machine, flake8 will run and report any linting errors that it found.
+2) Run `uv run pre-commit install` to install the git hook. After this, whenever you run `git commit` in your local machine, flake8 will run and report any linting errors that it found.
 
-3) If you've already committed your changes before installing `pre-commit`, you can follow steps 1 and 2 and then run `pre-commit run --all-files` to run flake8 against all of the files.
+3) If you've already committed your changes before installing `pre-commit`, you can follow steps 1 and 2 and then run `uv run pre-commit run --all-files` to run flake8 against all of the files.
 
 ## Help with translation of the website
 Join us on [poeditor.com](https://poeditor.com/join/project?hash=n5I3liMVyj) to help with translation of the website so 

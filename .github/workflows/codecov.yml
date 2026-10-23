@@ -31,15 +31,16 @@ jobs:
       with:
         fetch-depth: '2'
 
-    - name: Setup Python ${{ matrix.python-version }}
-      uses: actions/setup-python@master
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
       with:
         python-version: ${{ matrix.python-version }}
+        enable-cache: true
     - name: Generate Report
       run: |
-        pip install -r requirements.txt
-        coverage run -m pytest
-        coverage xml
+        uv sync --frozen
+        uv run coverage run -m pytest
+        uv run coverage xml
       env:
         POSTGRES_DB: djangogirls
         POSTGRES_HOST: localhost

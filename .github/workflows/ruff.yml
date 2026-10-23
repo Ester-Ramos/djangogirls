@@ -19,7 +19,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    - run: python -Im pip install --user ruff
+    - uses: astral-sh/setup-uv@v6
 
     - name: Run Ruff
-      run: ruff check --output-format=github .
+      run: uvx ruff check --output-format=github .

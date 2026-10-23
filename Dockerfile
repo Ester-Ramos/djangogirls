@@ -9,13 +9,17 @@ RUN npm install && \
     mkdir -p /app/static
 
 # Main Python stage
-FROM python:3.10.9-slim-bullseye
+FROM python:3.12-slim-bullseye
 
 # Set environment variables to reduce Python's output verbosity
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=off \
-    PIP_DISABLE_PIP_VERSION_CHECK=on
+    UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:0.12 /uv /uvx /bin/
 
 WORKDIR /var/www/app
 
@@ -42,9 +46,10 @@ RUN apt-get update && \
     && npm install -g gulp
 
 # Install Python dependencies
-COPY requirements.txt ./
-RUN pip install --upgrade pip pip-tools && \
-    pip-sync
+# The virtualenv lives outside the working directory so that the bind mount in
+# docker-compose.yml (.:/var/www/app) doesn't hide it.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen
 
 # Copy Node.js build artifacts from the node stage
 COPY --from=node-builder /app/node_modules /var/www/app/node_modules

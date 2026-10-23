@@ -1,3 +1,70 @@
+[project]
+name = "djangogirls"
+version = "0.0.0"
+description = "Django Girls website"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "dj-database-url==0.5.0",
+  "django>=3.2,<4",
+  "django-admin-sortable2==1.0.4",
+  "django-autoslug==1.9.4",
+  "django-bleach<4",
+  "django-click==2.3.0",
+  "django-countries",
+  "django-date-extensions",
+  "django-debug-toolbar",
+  "django-extensions",
+  "django-formtools>=2.5",
+  "django-gulp-rev==0.2",
+  "django-leaflet==0.24.0",
+  "django-markdown-deux==1.0.5",
+  "django-recaptcha",
+  "django-sendgrid-v5==0.8.1",
+  "django-storages[boto3]==1.7.1",
+  "django-tinymce",
+  "django-unused-media==0.1.13",
+  "dnspython",
+  "easy-thumbnails",
+  "easydict==1.10",
+  "pillow==12.3.0",
+  "psycopg2-binary==2.9.13",
+  "pyquery==2.1.0",
+  "python-dotenv==0.21.0",
+  "urlextract",
+  # Integrations
+  "google-api-python-client==2.37.0",
+  "icalendar==4.0.3",
+  "oauth2client==4.1.3",
+  "py-trello==0.13.0",
+  "sentry-sdk==2.24.1",
+  "slack-sdk==3.19.5",
+  "stripe",
+]
+
+[dependency-groups]
+dev = [
+  "pre-commit==4.6.2",
+  # Linting / formatting
+  "autoflake==1.4",
+  "black==26.3.1",
+  "flake8==4.0.1",
+  "isort==5.8.0",
+  # Testing
+  "freezegun",
+  "pytest==6.2.5",
+  "pytest-cov==2.12.1",
+  "pytest-django==4.4.0",
+  "pytest-dotenv==0.5.2",
+  "pytest-env==0.6.2",
+  "pytest-mock==3.10.0",
+  "vcrpy==8.3.0",
+]
+
+[tool.uv]
+# This is a Django application, not an installable package.
+package = false
+
 [tool.ruff]
 # https://beta.ruff.rs/docs/configuration/
 line-length = 120
